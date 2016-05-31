@@ -1,0 +1,55 @@
+.ui-header{
+    background-color: #2C3E50;
+    color: #fcfcfc;
+}
+
+.ui-content{
+	padding-top: 0px;
+}
+
+.ui-panel-inner {
+    background-color: #3E5770;
+}
+
+.ui-bar-a,
+.ui-page-theme-a .ui-bar-inherit,
+html .ui-bar-a .ui-bar-inherit,
+html .ui-body-a .ui-bar-inherit,
+html body .ui-group-theme-a .ui-bar-inherit {
+	background-color: #00ca86; /*{a-bar-background-color}*/;
+  color : #fcfcfc ;
+	border-color: #0E6655   /*{a-bar-border}*/;
+	/*color: #3388ca; /*{a-bar-color}*/
+	text-shadow: 0 /*{a-bar-shadow-x}*/ 0 /*{a-bar-shadow-y}*/ 0 /*{a-bar-shadow-radius}*/ #eeeeee /*{a-bar-shadow-color}*/;
+	font-weight: bold;
+}
+
+.ui-li-divider, .ui-bar-a, .ui-first-child{
+
+	border-color: #00ca86;
+}
+
+table[data-role=pricing-table] tbody th{
+    padding-top: 0.5px;
+    padding-bottom: 0.5px;
+}
+
+thead {
+    display: block;
+    width: 100%;
+}
+
+th {
+	display: block;
+    width: 100%;
+}
+
+tr {
+    display: block;
+    width: 100%;
+}
+
+tbody {
+	display: block;
+	width: 100%;
+}

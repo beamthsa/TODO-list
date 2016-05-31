@@ -1,0 +1,234 @@
+<!DOCTYPE HTML>
+<html>   
+    <head>
+      <meta charset="utf-8">
+      <title>TODO list</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+      <link rel="stylesheet" href="css/jqeury.mobile.theme.min.css" />
+      <link rel="stylesheet" href="css/jquery.mobile.icons.min.css" />
+      <link rel="stylesheet" href="css/jquery.mobile.min.css" />
+      <link rel="stylesheet" href="css/nightly.css" />
+      <link rel="stylesheet" type="text/css" href="css/profile.css">
+      <link rel="stylesheet" href="css/font-awesome.min.css">
+      <script src="js/jquery.min.js"></script>
+      <script src="js/jquery.mobile.min.js"></script>
+      <script src="js/nightly.js"></script>
+    </head>
+    <body>  
+        <div data-role="page" data-theme='a'>
+            <div data-role="header" data-tap-toggle="false" data-theme='b'>
+                <a href="#popupComplete" class="header-back-button" data-role="none" data-rel="popup" data-position-to="window" data-transition="pop">
+                  Completed
+                </a>
+                <div data-role="popup" id="popupComplete" data-theme="a" data-shadow="false" data-corners="false" data-border="true">
+                  <div style="padding: 10px 20px;">
+                    <h3 align="center">Complete Task</h3>
+                    <div id=completetask align="center"></div>
+                  </div>
+                </div>
+                <h1 class="header-title" role="heading" aria-level="1">
+                  TODO list
+                </h1>
+                <a href='#popupTODO' data-role="none" id="a-search" data-rel="popup" data-position-to="window" data-transition="pop" >
+                  <img src="img/add.png" alt="add" id="header-search-icon"/>
+                </a>
+                <div data-role="popup" id="popupTODO" data-theme="a" data-shadow="false" data-corners="false" data-border="true">
+                    <div style="padding: 10px 20px;">
+                        <img src="img/cancel.png" id="cancelbutton" style="height:25px; width:25px; margin-top:2px; margin-left:15px; vertical-align: middle; " align="right">
+                      <h3 align="center">Add TODO list</h3>
+                      <label for="tdtitle">Title</label>
+                      <input data-role="none" type="text" id="tdtitle" name="tdtitle" class="nightly-input"/>
+                      <label for="tddesc">Description (Optional)</label>
+                      <textarea data-role="none" class="nightly-input" id="tddesc" name="tddesc" cols="40" rows="3"></textarea>
+                      <label for="tddate">Date</label>
+                      <input data-corners="false" type="date" id="tddate" name="tddate" data-clear-btn="true">
+                      <label for="tdtime">Time</label>
+                      <input data-corners="false" type="time" id="tdtime" name="tdtime" data-clear-btn="true">
+                      <br>
+                      <button id="savetodo" name="savetodo">Save</button>
+                    </div>
+                </div>
+            </div>
+            <div data-role="content" style="text-align:center;">
+              <table data-role="pricing-table"> 
+                <tbody id="todolist"></tbody> 
+              </table>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var db = openDatabase('dotography', '1.0', 'TODO list DB', 2 * 1024 * 1024);
+
+            $("a[href='#popupTODO']").click(function(){
+              $("#popupTODO").fadeIn(500);
+            });   
+
+            $("a[href='#popupComplete']").click(function(){
+              $("#popupComplete").fadeIn(500);
+            });  
+
+            $("#cancelbutton").click(function() {
+              $("#tdtitle").val('');
+              $("#tddesc").val('');
+              $("#tddate").val('');
+              $("#tdtime").val('');
+              $('#popupTODO').fadeOut(300);
+            });  
+
+            $(document).ready(function() {
+              
+              /* get TODO list from database */
+              db.transaction(function (tx) {
+
+                  /* Create Table */
+                  tx.executeSql('CREATE TABLE IF NOT EXISTS todo (taskid INTEGER PRIMARY KEY,title TEXT,description TEXT,date TEXT, time TEXT, checked TEXT)'); 
+
+                  /* Get Value From todo Table */
+                  tx.executeSql('SELECT * FROM todo', [], function (tx, results) {
+                      for (var i = 0; i < results.rows.length; i++){
+                        var tdId = results.rows[i].taskid;
+                        var tdTitle = results.rows[i].title;
+                        var tdDate = results.rows[i].date;
+                        var tdTime = results.rows[i].time;
+                        var tdChecked = (results.rows[i].checked == 'true');   
+
+                        appendCompleteList(tdId,tdTitle,tdChecked);
+                        appendTODOList(tdId,tdTitle,tdDate,tdTime);
+
+                        $('#chk'+tdId).prop('checked', tdChecked);
+                      }
+                      checkCheckedStatus();
+                   }, null);
+                });
+            });
+
+            function appendTODOList(tdId,tdTitle,tdDate,tdTime) {
+
+                var newLi = "";
+                newLi += '<tr>'; 
+                newLi += '<th>';
+                newLi += '<div class="ui-grid-b" id="'+tdId+'">';
+                newLi += '<div class="ui-block-a" style="margin-top:15px">';
+                newLi += '<input type="checkbox" id="chk'+tdId+'" onChange="checkComplete('+tdId+')">';
+                newLi += '</div>';
+                newLi += '<div class="ui-block-b">';
+                newLi += '<p style="font-size:15px; style="text-align:center;"><b>'+tdTitle+'</b><br>'+tdDate+' '+tdTime+'</p>';
+                newLi += '</div>';
+                newLi += '<div class="ui-block-c" style="margin-top:5px">';
+                newLi += '<a onClick="redirectDetail('+tdId+')">';
+                newLi += '<img src="img/detail.png" style="height:25px; width: 25px; margin-top:18px;margin-left:20px; vertical-align: middle;">';
+                newLi += '</a>';
+                newLi += '<a onClick="removeTODOList('+tdId+')">';
+                newLi += '<img src="img/trash.png" style="height: 25                                                 px; width: 25px; margin-top:18px; margin-left:15px;  vertical-align: middle;">';
+                newLi += '</a>';
+                newLi += '</div>';
+                newLi += '</div>'; 
+                newLi += '</th>'; 
+                newLi += '</tr>';   
+                $('#todolist').append(newLi);
+            }
+
+            function removeTODOList(tdId) {
+                var remove = confirm("Are you sure ?");
+                if(remove == true) {
+
+                    /* Delete Query */
+                    db.transaction(function (tx) {  
+                      tx.executeSql('DELETE FROM todo WHERE taskid = ?', [tdId]);
+                    });
+                    $('#'+tdId).remove();
+                }
+            }
+
+            /* Save TODO list Function */
+            $("#savetodo").click(function() {
+                var tdTitle = $('#tdtitle').val(); 
+                var tdDesc = $('#tddesc').val();
+                var tdDate = $('#tddate').val();
+                var tdTime = $('#tdtime').val();
+                
+                /* Validate Input */
+                if (tdTitle == "") {
+                    alert("Please input title");
+                    $('#tdtitle').focus();
+                }else if (tdDate == "") { 
+                    alert("Please input date");
+                }else if (tdTime == "") {
+                    alert("Please input time");
+                }else {
+
+                  /* Generate TODO ID */
+                  var tdId;
+                  var tdCount = localStorage.getItem("tdcount");
+                  if (typeof tdCount !== 'undefined' && tdCount !== null){
+                      tdCount = parseInt(tdCount);
+                      tdId = tdCount+1;
+                  }else{
+                      tdId = 1;
+                  }
+                  localStorage.setItem("tdcount",tdId);
+                  
+                  /* Query TODO list Database */
+                  db.transaction(function (tx) {  
+                    /* Insert Data */
+                    tx.executeSql('INSERT INTO todo (taskid,title,description,date,time) VALUES (?, ?, ?, ?, ?)', [tdId, tdTitle, tdDesc, tdDate, tdTime]);
+                  });
+                  
+                  appendTODOList(tdId,tdTitle,tdDate,tdTime);
+                  
+                  /* Clear Value */
+                  $("#tdtitle").val('');
+                  $("#tddesc").val('');
+                  $("#tddate").val('');
+                  $("#tdtime").val('');
+                  $('#popupTODO').fadeOut(300);
+                }
+            });
+
+            function redirectDetail(tdId) {
+                sessionStorage.setItem("sessiontaskid",tdId);
+                window.location= "detail.html";
+            }
+
+            function appendCompleteList(tdId,tdTitle,tdChecked){
+              if(tdChecked == true) {
+                var newLi = "";
+                newLi = '<p id="box'+tdId+'">'+tdTitle+'</p>';
+                $('#completetask').append(newLi);  
+              }
+              else if(tdChecked == false){
+                $("#box"+tdId).remove();
+              }
+              
+            }
+
+            function checkComplete(tdId) {
+              var tdChecked = $("#chk"+tdId).prop("checked");
+              db.transaction(function (tx) {
+                  tx.executeSql('SELECT title FROM todo WHERE taskid = ?', [tdId], function (tx, results) {
+                    var tdTitle = results.rows[0].title;
+                    tx.executeSql('UPDATE todo SET checked = ? WHERE taskid = ?',[tdChecked,tdId]);
+                    appendCompleteList(tdId,tdTitle,tdChecked);
+                    checkCheckedStatus();
+                  }, null);
+              }); 
+            }
+
+            function checkCheckedStatus(){
+              
+              db.transaction(function (tx) {
+                  tx.executeSql('SELECT count(*) as count FROM todo WHERE checked = "true"', [], function (tx, results) {
+                    var count = results.rows[0].count;
+                    if(count == 0) {
+                      var newLi = "";
+                      newLi = '<p id="boxnone">None</p>';
+                      $('#completetask').append(newLi); 
+                    }
+                    else{
+                      $('#boxnone').remove();
+                    }
+                  }, null);
+              });
+            }
+        </script>
+    </body>
+</html>
